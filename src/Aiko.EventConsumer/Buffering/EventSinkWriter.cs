@@ -70,25 +70,10 @@ internal class EventSinkWriter : BackgroundService
         var groups = batch.GroupBy(m => m.EventType);
         var options = new ParallelOptions { MaxDegreeOfParallelism = MaxParallelInserts };
 
-        try
+        await Parallel.ForEachAsync(groups, options, async (group, _) =>
         {
-            await Parallel.ForEachAsync(groups, options, async (group, _) =>
-            {
-                await InsertGroupAsync(group.Key, group.ToList());
-            });
-
-            foreach (var message in batch)
-            {
-                message.AckTcs.TrySetResult();
-            }
-        }
-        catch (Exception ex)
-        {
-            foreach (var message in batch)
-            {
-                message.AckTcs.TrySetException(ex);
-            }
-        }
+            await InsertGroupAsync(group.Key, group.ToList());
+        });
     }
 
     private async Task InsertGroupAsync(MdtMessageType eventType, List<TrackedMessage> messages)
@@ -100,17 +85,28 @@ internal class EventSinkWriter : BackgroundService
             {
                 _logger.LogWarning("[Flush] No adapter for event type {EventType}, skipping {Count} messages",
                     eventType, messages.Count);
-                return;
+            }
+            else
+            {
+                var inserted = await adapter.BulkInsertAsync(messages.SelectMany(m => m.Events));
+                _logger.LogInformation("[Flush {EventType}] Insert OK. {EventCount} events from {MessageCount} messages.",
+                    eventType, inserted, messages.Count);
             }
 
-            var inserted = await adapter.BulkInsertAsync(messages.SelectMany(m => m.Events));
-            _logger.LogInformation("[Flush {EventType}] Insert OK. {EventCount} events from {MessageCount} messages.",
-                eventType, inserted, messages.Count);
+            foreach (var message in messages)
+            {
+                message.AckTcs.TrySetResult();
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[Flush {EventType}] Insert FAILED. Nacking {MessageCount} messages.",
                 eventType, messages.Count);
+
+            foreach (var message in messages)
+            {
+                message.AckTcs.TrySetException(ex);
+            }
         }
     }
 }
