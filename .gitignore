@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+
+# Credenciais de producao
+**/appsettings.Production.json
+
+
+# Publish output
+**/publish/

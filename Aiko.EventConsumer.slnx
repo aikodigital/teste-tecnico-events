@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Aiko.EventConsumer.Worker/Aiko.EventConsumer.Worker.csproj" />
+    <Project Path="src/Aiko.EventConsumer.Infrastructure.ClickHouse/Aiko.EventConsumer.Infrastructure.ClickHouse.csproj" />
+    <Project Path="src/Aiko.EventConsumer.Infrastructure.RabbitMQ/Aiko.EventConsumer.Infrastructure.RabbitMQ.csproj" />
+    <Project Path="src/Aiko.EventConsumer/Aiko.EventConsumer.csproj" Id="ee028b9c-ec12-4822-8996-03bd17cca495" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Aiko.EventConsumer.Tests/Aiko.EventConsumer.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Aiko.EventConsumer.MessageGenerator/Aiko.EventConsumer.MessageGenerator.csproj" />
+  </Folder>
+</Solution>

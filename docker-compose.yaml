@@ -1,0 +1,34 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    environment:
+      RABBITMQ_DEFAULT_USER: dev
+      RABBITMQ_DEFAULT_PASS: dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "gosu", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    environment:
+      CLICKHOUSE_DB: aiko_mdt
+      CLICKHOUSE_USER: dev
+      CLICKHOUSE_PASSWORD: dev
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./sql/tables:/docker-entrypoint-initdb.d:ro
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "dev", "--password", "dev", "-q", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
